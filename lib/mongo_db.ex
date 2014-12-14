@@ -41,15 +41,7 @@ defmodule Mongo.Db do
   def auth(%Mongo.Db{auth: nil}=db), do: {:ok, db}
   def auth(%Mongo.Db{auth: {username, hash_password}}=db) do
     nonce = getnonce(db)
-    case Mongo.Request.cmd(db, %{authenticate: 1}, %{nonce: nonce, user: username, key: hash(nonce <> username <> hash_password)})
-      |> Server.call do
-      {:ok, resp} ->
-        case resp.success do
-          :ok ->{:ok, db}
-          error -> error
-        end
-      error -> error
-    end
+    cmd_sync(db, %{authenticate: 1}, %{nonce: nonce, user: username, key: hash(nonce <> username <> hash_password)})
   end
 
   @doc """
